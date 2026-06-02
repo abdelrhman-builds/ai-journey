@@ -1,0 +1,5 @@
+Day 1: Environment setup
+Day 2: Python fundamentals
+Day 3: File handling
+Day 4: OOP concepts
+Day 5: Python project

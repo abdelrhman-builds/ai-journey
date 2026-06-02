@@ -1,0 +1,14 @@
+Introduction to AI Engineering
+    
+    Artificial Intelligence is transforming every industry.
+    Machine learning models can now understand text, images, and speech.
+    
+    What is RAG?
+    RAG stands for Retrieval Augmented Generation.
+    It combines document search with language models.
+    Companies use RAG to build intelligent document search systems.
+    
+    What is Fine-tuning?
+    Fine-tuning adapts a pre-trained model to a specific task.
+    It requires less data than training from scratch.
+    
