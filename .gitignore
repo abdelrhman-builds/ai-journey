@@ -148,6 +148,7 @@ activemq-data/
 *.sage.py
 
 # Environments
+# API keys and secrets — NEVER upload these to GitHub
 .env
 .envrc
 .venv
@@ -216,3 +217,9 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# AI Engineering specific
+*.pkl
+models/
+wandb/
+mlruns/
