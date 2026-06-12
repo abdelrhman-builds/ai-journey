@@ -14,21 +14,28 @@ Building LLM-powered applications with Python, LangChain, and RAG systems.
 
 ### Project 0: CSV Analyzer (Day 5)
 A command-line tool that analyzes any CSV file and displays statistics.
+- **Stack:** Python, argparse, csv module
+- **Run:** `cd csv_analyzer && python analyzer.py --file data.csv`
 
-**Features:**
-- Automatically detects numeric vs text columns
-- Calculates min, max, average, total for numeric columns
-- Shows unique values for text columns
-- Professional error handling
-- Works with any CSV file
+### Project 1: Zaki — AI Chatbot (Day 9)
+Multi-turn terminal chatbot with memory and token tracking.
+- **Stack:** Python, Gemini API, google-genai
+- **Run:** `cd chatbot && python day9_chatbot.py`
 
-**Tech stack:** Python, argparse, csv module
+### Project 2: Prompt Engineering Lab (Day 10)
+Experiments with zero-shot, few-shot, CoT, and templates.
+- **Stack:** Python, Gemini API, PromptTemplate class
+- **Run:** `python day10_prompts.py`
 
-**How to run:**
-```bash
-cd csv_analyzer
-python analyzer.py --file your_data.csv
-```
+### Project 3: AI Data Extractor (Day 11)
+Extracts structured JSON from job descriptions and CVs.
+- **Stack:** Python, Gemini API, JSON validation
+- **Run:** `python day11_structured_outputs.py`
+
+### Project 4: Zaki Financial Assistant (Day 12)
+AI assistant with function calling — calculator, currency, jobs.
+- **Stack:** Python, Gemini API, function calling
+- **Run:** `python day12_function_calling.py`
 
 ---
 
@@ -41,14 +48,21 @@ python analyzer.py --file your_data.csv
 | 3 | File Handling + Git | ✅ |
 | 4 | OOP | ✅ |
 | 5 | CSV Analyzer Project | ✅ |
-| 6-7 | Git Mastery | 🔄 |
-| 8 | OpenAI API | ⏳ |
+| 6-7 | Git Mastery + Review | ✅ |
+| 8 | Gemini API Basics | ✅ |
+| 9 | Multi-turn Chatbot | ✅ |
+| 10 | Prompt Engineering | ✅ |
+| 11 | Structured Outputs | ✅ |
+| 12 | Function Calling | ✅ |
+| 13-14 | Polish + Review | 🔄 |
+| 15+ | RAG System | ⏳ |
 
 ---
 
 ## 🛠️ Tech Stack
 ![Python](https://img.shields.io/badge/Python-3.11-blue)
-![Git](https://img.shields.io/badge/Git-2.54-orange)
+![Gemini](https://img.shields.io/badge/Gemini-API-orange)
+![Git](https://img.shields.io/badge/Git-2.54-red)
 
 ---
 
