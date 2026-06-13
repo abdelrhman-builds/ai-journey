@@ -68,3 +68,5 @@ AI assistant with function calling — calculator, currency, jobs.
 
 ## 📫 Connect
 - GitHub: [@abdelrhman-builds](https://github.com/abdelrhman-builds)
+- LinkedIn: [Abdelrhman Samir](https://www.linkedin.com/in/abdelrhman-samir-ai)
+- Journey: Building AI applications one day at a time
