@@ -222,4 +222,4 @@ __marimo__/
 *.pkl
 models/
 wandb/
-mlruns/
+mlruns/ai-document-qa/ 
