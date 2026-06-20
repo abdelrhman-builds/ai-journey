@@ -1,4 +1,4 @@
-# Byte-compiled / optimized / DLL files
+﻿# Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[codz]
 *$py.class
@@ -222,4 +222,5 @@ __marimo__/
 *.pkl
 models/
 wandb/
-mlruns/ai-document-qa/ 
+mlruns/
+ai-document-qa/ 

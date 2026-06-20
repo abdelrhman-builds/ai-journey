@@ -12,6 +12,30 @@ Building LLM-powered applications with Python, LangChain, and RAG systems.
 
 ## 🚀 Projects
 
+### 🌟 Featured Project: AI Document Q&A System (RAG)
+**[🔗 Live Demo](https://huggingface.co/spaces/AbdelrhmanSamir/ai-document-qa)**
+
+A production RAG (Retrieval-Augmented Generation) system that answers
+questions from uploaded documents with zero hallucination and source citations.
+
+![Status](https://img.shields.io/badge/Status-Live-success)
+![Deployed](https://img.shields.io/badge/Deployed-HuggingFace%20Spaces-orange)
+
+**Features:**
+- Multi-format document upload (PDF, TXT)
+- Semantic search with local embeddings (HuggingFace)
+- Zero-hallucination answers with source citations
+- Multi-document support with metadata filtering
+- Production security: file validation, usage limits, quota protection
+- Clean chat-based UI built with Streamlit
+
+**Stack:** Python, LangChain, ChromaDB, HuggingFace Embeddings, Google Gemini API, Streamlit, Docker
+
+**Try it:** Upload any PDF and ask questions — the system only answers
+from what's actually in your document, and tells you when it doesn't know.
+
+---
+
 ### Project 0: CSV Analyzer (Day 5)
 A command-line tool that analyzes any CSV file and displays statistics.
 - **Stack:** Python, argparse, csv module
@@ -54,8 +78,15 @@ AI assistant with function calling — calculator, currency, jobs.
 | 10 | Prompt Engineering | ✅ |
 | 11 | Structured Outputs | ✅ |
 | 12 | Function Calling | ✅ |
-| 13-14 | Polish + Review | 🔄 |
-| 15+ | RAG System | ⏳ |
+| 13-14 | LinkedIn + Week 2 Review | ✅ |
+| 15 | RAG Foundations | ✅ |
+| 16 | Embeddings + Vector Store | ✅ |
+| 17 | Full RAG Pipeline | ✅ |
+| 18 | Multi-Document RAG | ✅ |
+| 19 | Streamlit UI | ✅ |
+| 20 | Permanent Deployment | ✅ |
+| 21 | Week 3 Wrap-up | 🔄 |
+| 22+ | FastAPI + Production | ⏳ |
 
 ---
 
