@@ -21,6 +21,9 @@ questions from uploaded documents with zero hallucination and source citations.
 ![Status](https://img.shields.io/badge/Status-Live-success)
 ![Deployed](https://img.shields.io/badge/Deployed-HuggingFace%20Spaces-orange)
 
+![Upload Interface](assets/rag-demo-upload.png)
+![Q&A with Sources](assets/rag-demo-answer.png)
+
 **Features:**
 - Multi-format document upload (PDF, TXT)
 - Semantic search with local embeddings (HuggingFace)
