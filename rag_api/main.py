@@ -1,0 +1,228 @@
+# =============================================
+# Day 23 - RAG API with FastAPI
+# Author: Abdelrhman
+# Date: June 2026
+# =============================================
+# Wraps the RAG system (Days 15-20) in real endpoints:
+# POST /upload - load, split, embed, store a document
+# POST /ask    - search, prompt, get answer with sources
+# =============================================
+
+import os
+import shutil
+from fastapi import FastAPI, UploadFile, HTTPException
+from dotenv import load_dotenv
+
+import google.genai as genai
+from google.genai import types
+
+from langchain_core.documents import Document
+from langchain_text_splitters import RecursiveCharacterTextSplitter
+from langchain_chroma import Chroma
+from langchain_huggingface import HuggingFaceEmbeddings
+from langchain_community.document_loaders import PyPDFLoader
+
+from models import QuestionRequest, AnswerResponse, SourceInfo, UploadResponse
+
+load_dotenv()
+
+app = FastAPI(
+    title="RAG API",
+    description="Document Q&A system - upload documents, ask questions",
+    version="1.0.0"
+)
+
+
+# =============================================
+# GLOBAL STATE (simple version for today)
+# =============================================
+# In a real production app this would be a database.
+# For today, we keep it simple: one shared vector store
+# in memory while the server runs.
+
+vectorstore = None
+embeddings_model = None
+gemini_client = None
+
+
+@app.on_event("startup")
+def load_models():
+    """
+    Runs ONCE when the API server starts up.
+    Loads the embeddings model and Gemini client a single
+    time, so every request reuses them instead of reloading.
+
+    This is the FastAPI equivalent of Streamlit's
+    @st.cache_resource from Day 19/20.
+    """
+    global embeddings_model, gemini_client
+
+    print("Loading embeddings model...")
+    embeddings_model = HuggingFaceEmbeddings(
+        model_name="sentence-transformers/all-MiniLM-L6-v2"
+    )
+
+    print("Initializing Gemini client...")
+    api_key = os.getenv("GEMINI_API_KEY")
+    gemini_client = genai.Client(api_key=api_key)
+
+    print("✅ Models loaded - API ready!")
+
+
+# =============================================
+# ENDPOINT 1: Upload Document
+# =============================================
+
+@app.post("/upload", response_model=UploadResponse)
+def upload_document(file: UploadFile):
+    """
+    Receives a file, processes it through the RAG pipeline:
+    Load → Split → Embed → Store
+
+    UploadFile is FastAPI's special type for handling
+    file uploads (similar to Streamlit's file_uploader,
+    but for API clients instead of browser UI).
+    """
+    global vectorstore
+
+    # Validate file type (same security thinking as Day 20)
+    if not (file.filename.endswith(".pdf") or file.filename.endswith(".txt")):
+        raise HTTPException(
+            status_code=400,
+            detail="Only PDF and TXT files are supported"
+        )
+
+    # Save temporarily to process it
+    temp_path = f"./temp_{file.filename}"
+    with open(temp_path, "wb") as buffer:
+        shutil.copyfileobj(file.file, buffer)
+
+    try:
+        # Load document (Day 15 logic)
+        if file.filename.endswith(".pdf"):
+            loader = PyPDFLoader(temp_path)
+            documents = loader.load()
+        else:
+            with open(temp_path, "r", encoding="utf-8") as f:
+                text = f.read()
+            documents = [Document(page_content=text, metadata={})]
+
+        for doc in documents:
+            doc.metadata["source"] = file.filename
+
+        # Split into chunks (Day 15 logic)
+        splitter = RecursiveCharacterTextSplitter(
+            chunk_size=500, chunk_overlap=50
+        )
+        chunks = splitter.split_documents(documents)
+
+        for i, chunk in enumerate(chunks):
+            chunk.metadata["chunk_id"] = i
+
+        # Embed + Store (Day 16 logic)
+        vectorstore = Chroma.from_documents(
+            documents=chunks,
+            embedding=embeddings_model,
+            persist_directory="./api_chroma_db"
+        )
+
+        return UploadResponse(
+            filename=file.filename,
+            chunks_created=len(chunks),
+            status="success"
+        )
+
+    finally:
+        # Always clean up, even if something failed
+        if os.path.exists(temp_path):
+            os.remove(temp_path)
+
+
+# =============================================
+# ENDPOINT 2: Ask a Question
+# =============================================
+
+@app.post("/ask", response_model=AnswerResponse)
+def ask_question(request: QuestionRequest):
+    """
+    Receives a question, runs it through the RAG pipeline:
+    Search → Build Context → Prompt → Gemini → Answer
+
+    This is the Day 17 ask_rag() function, now exposed
+    as a proper API endpoint with validated input/output.
+    """
+    if vectorstore is None:
+        raise HTTPException(
+            status_code=400,
+            detail="No document uploaded yet. Call /upload first."
+        )
+
+    # Search vector store (Day 16-17 logic)
+    relevant_chunks = vectorstore.similarity_search(
+        request.question, k=request.k
+    )
+
+    # Build context with source labels
+    context = "\n\n".join([
+        f"[Source: {c.metadata.get('source', 'unknown')}]\n{c.page_content}"
+        for c in relevant_chunks
+    ])
+
+    # RAG hallucination-prevention prompt (Day 17 pattern)
+    prompt = f"""You are a helpful AI assistant.
+Answer using ONLY the provided context.
+If the answer is not in the context, say "I don't have that information in the document."
+Always mention which document your answer came from.
+
+CONTEXT:
+{context}
+
+QUESTION: {request.question}
+
+ANSWER:"""
+
+    response = gemini_client.models.generate_content(
+        model="gemini-2.5-flash",
+        contents=prompt,
+        config=types.GenerateContentConfig(
+            temperature=0.0,
+            max_output_tokens=500,
+            thinking_config=types.ThinkingConfig(thinking_budget=0)
+        )
+    )
+
+    # Build the structured response (Pydantic validates this
+    # automatically matches AnswerResponse before sending it)
+    sources = [
+        SourceInfo(
+            chunk_id=c.metadata.get("chunk_id", i),
+            source_file=c.metadata.get("source", "unknown"),
+            preview=c.page_content[:100]
+        )
+        for i, c in enumerate(relevant_chunks)
+    ]
+
+    return AnswerResponse(
+        question=request.question,
+        answer=response.text.strip(),
+        sources=sources,
+        chunks_used=len(relevant_chunks)
+    )
+
+
+# =============================================
+# ENDPOINT 3: Health Check
+# =============================================
+
+@app.get("/health")
+def health_check():
+    """
+    Simple endpoint to verify the API is running and
+    models are loaded. Common pattern in production APIs
+    for monitoring/uptime checks.
+    """
+    return {
+        "status": "healthy",
+        "models_loaded": embeddings_model is not None,
+        "document_loaded": vectorstore is not None
+    }
