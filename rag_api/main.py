@@ -10,7 +10,7 @@
 
 import os
 import shutil
-from fastapi import FastAPI, UploadFile, HTTPException
+from fastapi import FastAPI, UploadFile, HTTPException, Header, Depends
 from dotenv import load_dotenv
 
 import google.genai as genai
@@ -25,6 +25,31 @@ from langchain_community.document_loaders import PyPDFLoader
 from models import QuestionRequest, AnswerResponse, SourceInfo, UploadResponse
 
 load_dotenv()
+
+# =============================================
+# AUTHENTICATION
+# =============================================
+
+API_SECRET_KEY = os.getenv("RAG_API_SECRET_KEY")
+
+
+def verify_api_key(x_api_key: str = Header(...)):
+    """
+    Dependency function that checks the X-API-Key header
+    on every request that uses it.
+
+    Header(...) means: this value MUST come from an HTTP
+    header named "X-API-Key" (FastAPI automatically converts
+    x_api_key → X-API-Key). The "..." means it's REQUIRED —
+    if missing, FastAPI rejects the request automatically
+    before this function even runs.
+    """
+    if x_api_key != API_SECRET_KEY:
+        raise HTTPException(
+            status_code=401,
+            detail="Invalid or missing API key"
+        )
+    return x_api_key
 
 app = FastAPI(
     title="RAG API",
@@ -74,14 +99,17 @@ def load_models():
 # =============================================
 
 @app.post("/upload", response_model=UploadResponse)
-def upload_document(file: UploadFile):
+def upload_document(file: UploadFile, api_key: str = Depends(verify_api_key)):
     """
-    Receives a file, processes it through the RAG pipeline:
-    Load → Split → Embed → Store
+    Depends(verify_api_key) tells FastAPI:
+    "before running this function, run verify_api_key()
+    first. If it raises an error, stop here and return
+    that error instead."
 
-    UploadFile is FastAPI's special type for handling
-    file uploads (similar to Streamlit's file_uploader,
-    but for API clients instead of browser UI).
+    This is FastAPI's "dependency injection" pattern —
+    reusable logic (auth, in this case) that multiple
+    endpoints can share without copy-pasting the check
+    into every single function.
     """
     global vectorstore
 
@@ -143,7 +171,7 @@ def upload_document(file: UploadFile):
 # =============================================
 
 @app.post("/ask", response_model=AnswerResponse)
-def ask_question(request: QuestionRequest):
+def ask_question(request: QuestionRequest, api_key: str = Depends(verify_api_key)):
     """
     Receives a question, runs it through the RAG pipeline:
     Search → Build Context → Prompt → Gemini → Answer
