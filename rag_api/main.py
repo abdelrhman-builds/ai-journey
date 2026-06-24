@@ -171,13 +171,13 @@ def upload_document(file: UploadFile, api_key: str = Depends(verify_api_key)):
 # =============================================
 
 @app.post("/ask", response_model=AnswerResponse)
-def ask_question(request: QuestionRequest, api_key: str = Depends(verify_api_key)):
+async def ask_question(request: QuestionRequest, api_key: str = Depends(verify_api_key)):
     """
-    Receives a question, runs it through the RAG pipeline:
-    Search → Build Context → Prompt → Gemini → Answer
-
-    This is the Day 17 ask_rag() function, now exposed
-    as a proper API endpoint with validated input/output.
+    Now an ASYNC endpoint. The vector search (similarity_search)
+    stays synchronous because Chroma's local search is FAST —
+    it doesn't involve network waiting, so async wouldn't help
+    there. But the Gemini API call genuinely benefits, since
+    it's a real network request that takes 1-3 seconds.
     """
     if vectorstore is None:
         raise HTTPException(
@@ -185,18 +185,16 @@ def ask_question(request: QuestionRequest, api_key: str = Depends(verify_api_key
             detail="No document uploaded yet. Call /upload first."
         )
 
-    # Search vector store (Day 16-17 logic)
+    # Vector search - stays synchronous, it's fast/local
     relevant_chunks = vectorstore.similarity_search(
         request.question, k=request.k
     )
 
-    # Build context with source labels
     context = "\n\n".join([
         f"[Source: {c.metadata.get('source', 'unknown')}]\n{c.page_content}"
         for c in relevant_chunks
     ])
 
-    # RAG hallucination-prevention prompt (Day 17 pattern)
     prompt = f"""You are a helpful AI assistant.
 Answer using ONLY the provided context.
 If the answer is not in the context, say "I don't have that information in the document."
@@ -209,7 +207,10 @@ QUESTION: {request.question}
 
 ANSWER:"""
 
-    response = gemini_client.models.generate_content(
+    # THE KEY CHANGE: await + .aio.models instead of .models
+    # This is the ASYNC version of the Gemini call —
+    # it lets the server handle OTHER requests while waiting
+    response = await gemini_client.aio.models.generate_content(
         model="gemini-2.5-flash",
         contents=prompt,
         config=types.GenerateContentConfig(
@@ -219,8 +220,6 @@ ANSWER:"""
         )
     )
 
-    # Build the structured response (Pydantic validates this
-    # automatically matches AnswerResponse before sending it)
     sources = [
         SourceInfo(
             chunk_id=c.metadata.get("chunk_id", i),
