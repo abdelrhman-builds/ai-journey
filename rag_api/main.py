@@ -51,10 +51,24 @@ def verify_api_key(x_api_key: str = Header(...)):
         )
     return x_api_key
 
+# Update the FastAPI app initialization:
 app = FastAPI(
-    title="RAG API",
-    description="Document Q&A system - upload documents, ask questions",
-    version="1.0.0"
+    title="RAG Document Q&A API",
+    description="""
+A Retrieval-Augmented Generation (RAG) API for document Q&A.
+
+Upload PDF or text documents, then ask questions about their content.
+Answers are grounded ONLY in the uploaded documents — if the answer
+isn't found, the API will say so honestly instead of guessing.
+
+**Authentication:** All endpoints except `/health` require an
+`X-API-Key` header.
+    """,
+    version="1.0.0",
+    contact={
+        "name": "Abdelrhman",
+        "url": "https://github.com/abdelrhman-builds"
+    }
 )
 
 
@@ -98,7 +112,20 @@ def load_models():
 # ENDPOINT 1: Upload Document
 # =============================================
 
-@app.post("/upload", response_model=UploadResponse)
+@app.post(
+    "/upload",
+    response_model=UploadResponse,
+    tags=["Documents"],
+    summary="Upload a document for Q&A",
+    description="""
+Uploads a PDF or TXT file, processes it through the RAG pipeline
+(load → split → embed → store), and makes it available for
+questions via the /ask endpoint.
+
+**Supported formats:** PDF, TXT
+**Max recommended size:** keep files reasonably small for fast processing
+    """
+)
 def upload_document(file: UploadFile, api_key: str = Depends(verify_api_key)):
     """
     Depends(verify_api_key) tells FastAPI:
@@ -170,7 +197,19 @@ def upload_document(file: UploadFile, api_key: str = Depends(verify_api_key)):
 # ENDPOINT 2: Ask a Question
 # =============================================
 
-@app.post("/ask", response_model=AnswerResponse)
+@app.post(
+    "/ask",
+    response_model=AnswerResponse,
+    tags=["Q&A"],
+    summary="Ask a question about uploaded documents",
+    description="""
+Searches the uploaded document(s) for relevant content, then asks
+Gemini to answer using ONLY that content.
+
+If the answer isn't found in the documents, the response will
+honestly say so rather than guessing from general knowledge.
+    """
+)
 async def ask_question(request: QuestionRequest, api_key: str = Depends(verify_api_key)):
     """
     Now an ASYNC endpoint. The vector search (similarity_search)
@@ -241,7 +280,12 @@ ANSWER:"""
 # ENDPOINT 3: Health Check
 # =============================================
 
-@app.get("/health")
+@app.get(
+    "/health",
+    tags=["System"],
+    summary="Check API health status",
+    description="Returns whether the API is running and models are loaded. Does not require authentication."
+)
 def health_check():
     """
     Simple endpoint to verify the API is running and
