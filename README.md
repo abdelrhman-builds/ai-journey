@@ -37,6 +37,78 @@ questions from uploaded documents with zero hallucination and source citations.
 **Try it:** Upload any PDF and ask questions — the system only answers
 from what's actually in your document, and tells you when it doesn't know.
 
+### 🔌 RAG API Backend (FastAPI)
+**[🔗 Live API Docs](https://abdelrhmansamir-rag-api-backend.hf.space/docs)**
+ 
+A standalone REST API exposing the same RAG system as a documented,
+authenticated, asynchronous backend — separate from the Streamlit UI
+above. Built for integration into other applications, not just human
+browser use.
+ 
+![Status](https://img.shields.io/badge/Status-Live-success)
+![Tested](https://img.shields.io/badge/Tests-Passing-brightgreen)
+![Deployed](https://img.shields.io/badge/Deployed-HuggingFace%20Spaces-orange)
+ 
+**Source code:** [`rag_api/`](./rag_api) in this repository
+**Deployment:** Docker container on HuggingFace Spaces
+*(Note: the HuggingFace Space's own git repo is a deployment target
+only — this repository's `rag_api/` folder is the canonical source.)*
+ 
+**Features:**
+- API key authentication (`X-API-Key` header)
+- Async request handling for concurrent clients
+- Automated test suite (pytest + TestClient) — 11 tests passing
+- Full interactive documentation with field-level descriptions and validation
+**Stack:** FastAPI, Pydantic, pytest, Docker, async/await, ChromaDB,
+HuggingFace Embeddings, Google Gemini API
+ 
+---
+ 
+**Example usage:**
+ 
+Upload a document:
+```bash
+curl -X POST "https://abdelrhmansamir-rag-api-backend.hf.space/upload" \
+  -H "x-api-key: YOUR_API_KEY" \
+  -F "file=@sample_document.txt"
+```
+ 
+Response:
+```json
+{
+  "filename": "sample_document.txt",
+  "chunks_created": 8,
+  "status": "success"
+}
+```
+ 
+Ask a question:
+```bash
+curl -X POST "https://abdelrhmansamir-rag-api-backend.hf.space/ask" \
+  -H "x-api-key: YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"question": "What is RAG?", "k": 3}'
+```
+ 
+Response:
+```json
+{
+  "question": "What is RAG?",
+  "answer": "RAG stands for Retrieval Augmented Generation. It is a technique that combines document retrieval with language model generation to produce accurate, grounded answers. (Source: sample_document.txt)",
+  "sources": [
+    {
+      "chunk_id": 1,
+      "source_file": "sample_document.txt",
+      "preview": "Key responsibilities of an AI Engineer:\n- Building LLM-powered applications\n- Implementing RAG syste"
+    }
+  ],
+  "chunks_used": 3
+}
+```
+ 
+*Note: this is a demo with limited free-tier API quota. For full access
+or a live walkthrough, feel free to reach out via LinkedIn.*
+
 ---
 
 ### Project 0: CSV Analyzer (Day 5)
