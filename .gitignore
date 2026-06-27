@@ -224,3 +224,4 @@ models/
 wandb/
 mlruns/
 ai-document-qa/ 
+rag-api-backend/ 
