@@ -152,3 +152,9 @@ if __name__ == "__main__":
         "to USD, then tell me what 20% of that USD amount would be "
         "(as a hypothetical monthly savings target)."
     )
+
+    # The Ambiguous Question Test
+    ask_agent(
+        "Compare the AI Engineer salary in Cairo versus Remote, "
+        "and tell me the percentage difference between them."
+    )
