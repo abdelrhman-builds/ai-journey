@@ -109,6 +109,30 @@ Response:
 *Note: this is a demo with limited free-tier API quota. For full access
 or a live walkthrough, feel free to reach out via LinkedIn.*
 
+### 🤖 AI Agents (Week 5)
+**Source code:** [`agents/`](./agents) in this repository
+
+A progression of increasingly sophisticated AI agents built with
+LangChain and LangGraph:
+
+| Day | File | What It Demonstrates |
+|-----|------|----------------------|
+| 29 | `day29_basic_agent.py` | First real agent — multi-step tool chaining with `create_react_agent` |
+| 30 | `day30_chaining.py` | 3-step sequential chain — job search → currency convert → percentage |
+| 31 | `day31_parallel.py` | Parallel tool execution investigation — timing analysis with async tools |
+| 32 | `day32_web_search.py` | Live web search via Tavily + dynamic date system prompt |
+| 33 | `day33_rag_agent.py` | **Most advanced** — RAG + web search combined, agent routes between private documents and live internet |
+
+**Tools built across Week 5:**
+- Financial calculators (percentage, compound interest, currency)
+- Egyptian tech job market lookup
+- Live web search (Tavily)
+- RAG document loader and searcher
+
+**Key capability proven on Day 33:**
+One agent answering from both your uploaded documents AND the live web,
+choosing the right source automatically and synthesizing both when needed.
+
 ---
 
 ### Project 0: CSV Analyzer (Day 5)
