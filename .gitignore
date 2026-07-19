@@ -225,3 +225,7 @@ wandb/
 mlruns/
 ai-document-qa/ 
 rag-api-backend/ 
+database/rag_history.db 
+database/__pycache__/ 
+*.db 
+__pycache__/ 
