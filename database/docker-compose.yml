@@ -1,0 +1,41 @@
+# =============================================
+# Day 52 - Docker Compose: API + Database Together
+# Author: Abdelrhman
+# Date: July 2026
+# =============================================
+# Demonstrates multi-container orchestration, extending
+# Day 20's single-container Dockerfile to a realistic setup
+# where an API service and a database run as separate,
+# networked containers.
+
+version: '3.8'
+
+services:
+  # The RAG API service (building on Week 4's FastAPI work)
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=sqlite:///./data/rag_history.db
+    volumes:
+      - ./data:/app/data
+      # Mounts a local folder into the container so the
+      # SQLite database file PERSISTS even if the container
+      # is destroyed and recreated — otherwise, database
+      # data would be lost every time the container restarts,
+      # defeating the entire point of Days 50-51's work
+    depends_on:
+      - db_init
+
+  # A one-time service that ensures the database schema exists
+  # before the API starts — demonstrates service dependencies
+  db_init:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: python day50_database.py
+    volumes:
+      - ./data:/app/data
